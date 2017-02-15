@@ -17,12 +17,6 @@ $(document).ready(function(){
             //var minValue = Math.min.apply(null, onlyValues),
             //        maxValue = Math.max.apply(null, onlyValues);
 
-            // create color palette function
-            // color can be whatever you wish
-            //var paletteScale = d3.scale.linear()
-            //        .domain([minValue,maxValue])
-            //        .range(["#EFEFFF","#02386F"]); // blue color
-            
             var sum_costs = {};
             json_data.forEach(function(item){
                 sum_costs[item._id.code] = 0;
@@ -31,6 +25,12 @@ $(document).ready(function(){
                 sum_costs[item._id.code] += item._id.cost;
             });
 
+            // create color palette function
+            // color can be whatever you wish
+            var paletteScale = d3.scale.linear()
+                    .domain(d3.extent(json_data, function(d){return sum_costs[d._id.code];}))
+                    .range(["#EFEFFF","#02386F"]); // blue color
+            
             // fill dataset in appropriate format
             json_data.forEach(function(item){ //
                 // item example value ["USA", 70]
@@ -39,14 +39,15 @@ $(document).ready(function(){
                 dataset[iso] = { cost: item._id.cost,
                     project_name: item._id.project,
                     country: item._id.country,
-                    sum_cost: sum_cost};
+                    sum_cost: sum_cost,
+                    fillColor: paletteScale(sum_cost)};
             });
 
             // render map
             new Datamap({
                 element: document.getElementById('map_container'),
                 //projection: 'mercator', // big world map
-                // countries don't listed in dataset will be painted with this color
+                // countries not listed in dataset will be painted with this color
                 fills: { defaultFill: '#F5F5F5' },
                 data: dataset,
                 geographyConfig: {
