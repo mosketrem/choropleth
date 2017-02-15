@@ -29,11 +29,5 @@ def projects():
       ] )
     return dumps(result)
 
-@app.route('/one')
-def one():
-    collection = mongo.db.bank_col
-    result = collection.find_one()
-    return dumps(result)
-
 if __name__ == '__main__':
     app.run(debug=True)
