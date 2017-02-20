@@ -19,28 +19,32 @@ $(document).ready(function(){
 
             var sum_costs = {};
             json_data.forEach(function(item){
-                sum_costs[item._id.code] = 0;
+                sum_costs[item._id.code] = {total_cost: 0, projects: ''};
             });
             json_data.forEach(function(item){
-                sum_costs[item._id.code] += item._id.cost;
+                sum_costs[item._id.code].total_cost += item._id.cost;
+                sum_costs[item._id.code].projects = [sum_costs[item._id.code].projects,
+                                        'Project name: <strong>', item._id.project, '</strong>',
+                                        '<br>Project cost: <strong>', item._id.cost, '</strong>',
+                                        '<hr>'].join('');
             });
 
             // create color palette function
             // color can be whatever you wish
             var paletteScale = d3.scale.linear()
-                    .domain(d3.extent(json_data, function(d){return sum_costs[d._id.code];}))
+                    .domain(d3.extent(json_data, function(d){return sum_costs[d._id.code].total_cost;}))
                     .range(["#EFEFFF","#02386F"]); // blue color
             
             // fill dataset in appropriate format
             json_data.forEach(function(item){ //
                 // item example value ["USA", 70]
                 var iso = iso3[item._id.code];
-                var sum_cost = sum_costs[item._id.code];
-                dataset[iso] = { cost: item._id.cost,
-                    project_name: item._id.project,
-                    country: item._id.country,
-                    sum_cost: sum_cost,
-                    fillColor: paletteScale(sum_cost)};
+                var total_cost = sum_costs[item._id.code].total_cost;
+                var country_pojects = sum_costs[item._id.code].projects;
+                dataset[iso] = { total_cost: total_cost,
+                    country_pojects: country_pojects,
+                    country_name: item._id.country,
+                    fillColor: paletteScale(total_cost)};
             });
 
             // render map
@@ -65,10 +69,9 @@ $(document).ready(function(){
                         if (!data) { return ; }
                         // tooltip content
                         return ['<div class="hoverinfo">',
-                            'Project name: <strong>', data.project_name, '</strong>',
-                            '<br>Country: <strong>', data.country, '</strong>',
-                            '<br>Project cost     : <strong>', data.cost, '</strong>',
-                            '<br>All projects cost: <strong>', data.sum_cost, '</strong>',
+                            'Country: <strong>', data.country_name, '</strong><hr>',
+                            data.country_pojects,
+                            'All projects cost: <strong>', data.total_cost, '</strong>',
                             '</div>'].join('');
                     }
                 }
